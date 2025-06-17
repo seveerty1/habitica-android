@@ -17,6 +17,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.edit
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
@@ -153,15 +154,11 @@ abstract class HabiticaBaseApplication : Application(), Application.ActivityLife
     }
 
     private fun setLocale() {
-        val resources = resources
-        val configuration: Configuration = resources.configuration
-        val languageHelper = LanguageHelper(sharedPrefs.getString("language", "en"))
-        if (
-            configuration.locales.isEmpty || configuration.locales[0] != languageHelper.locale
-        ) {
-            configuration.setLocale(languageHelper.locale)
-            resources.updateConfiguration(configuration, null)
-        }
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val languageHelper = LanguageHelper(sharedPreferences.getString("language", "en"))
+        AppCompatDelegate.setApplicationLocales(
+            LocaleListCompat.forLanguageTags(languageHelper.locale.toLanguageTag())
+        )
     }
 
     protected open fun setupRealm() {

@@ -22,6 +22,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.core.os.LocaleListCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -110,7 +111,9 @@ abstract class BaseActivity : AppCompatActivity() {
         }
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val languageHelper = LanguageHelper(sharedPreferences.getString("language", "en"))
-        resources.forceLocale(this, languageHelper.locale)
+        AppCompatDelegate.setApplicationLocales(
+            LocaleListCompat.forLanguageTags(languageHelper.locale.toLanguageTag())
+        )
         delegate.localNightMode =
             when (sharedPreferences.getString("theme_mode", "system")) {
                 "light" -> AppCompatDelegate.MODE_NIGHT_NO
@@ -168,7 +171,9 @@ abstract class BaseActivity : AppCompatActivity() {
         super.onRestart()
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val languageHelper = LanguageHelper(sharedPreferences.getString("language", "en"))
-        resources.forceLocale(this, languageHelper.locale)
+        AppCompatDelegate.setApplicationLocales(
+            LocaleListCompat.forLanguageTags(languageHelper.locale.toLanguageTag())
+        )
     }
 
     val additionalScreenViewParams = mutableMapOf<String, String>()

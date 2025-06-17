@@ -2,12 +2,14 @@ package com.habitrpg.android.habitica.ui.fragments.preferences
 
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.edit
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
@@ -30,7 +32,6 @@ import com.habitrpg.android.habitica.helpers.notifications.PushNotificationManag
 import com.habitrpg.android.habitica.models.user.User
 import com.habitrpg.android.habitica.prefs.TimePreference
 import com.habitrpg.android.habitica.ui.activities.ClassSelectionActivity
-import com.habitrpg.android.habitica.ui.activities.MainActivity
 import com.habitrpg.android.habitica.ui.activities.PrefsActivity
 import com.habitrpg.android.habitica.ui.views.HabiticaSnackbar
 import com.habitrpg.android.habitica.ui.views.SnackbarActivity
@@ -40,12 +41,10 @@ import com.habitrpg.android.habitica.ui.views.preferences.PauseResumeDamageView
 import com.habitrpg.android.habitica.ui.views.showAsBottomSheet
 import com.habitrpg.common.habitica.helpers.AppTestingLevel
 import com.habitrpg.common.habitica.helpers.ExceptionHandler
-import com.habitrpg.common.habitica.helpers.LanguageHelper
 import com.habitrpg.common.habitica.helpers.launchCatching
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -358,27 +357,28 @@ class PreferencesFragment :
             }
 
             "language" -> {
-                val languageHelper = LanguageHelper(sharedPreferences.getString(key, "en"))
+                val selectedTag = sharedPreferences.getString(key, "en")!!
 
-                Locale.setDefault(languageHelper.locale)
-                val configuration = Configuration()
-                configuration.setLocale(languageHelper.locale)
-                @Suppress("DEPRECATION")
-                activity?.resources?.updateConfiguration(
-                    configuration,
-                    activity?.resources?.displayMetrics
-                )
+                val currentTags = AppCompatDelegate
+                    .getApplicationLocales()
+                    .toLanguageTags()
 
-                if (user?.preferences?.language == languageHelper.languageCode) {
+                if (selectedTag == currentTags) {
                     return
                 }
+
+                AppCompatDelegate.setApplicationLocales(
+                    LocaleListCompat.forLanguageTags(selectedTag)
+                )
+
+                sharedPreferences.edit {
+                    putString("language", selectedTag)
+                }
+
                 lifecycleScope.launchCatching {
-                    userRepository.updateLanguage(languageHelper.languageCode ?: "en")
+                    userRepository.updateLanguage(selectedTag)
                     reloadContent(false)
                 }
-                val intent = Intent(activity, MainActivity::class.java)
-                this.startActivity(intent)
-                activity?.finishAffinity()
             }
 
             "audioTheme" -> {

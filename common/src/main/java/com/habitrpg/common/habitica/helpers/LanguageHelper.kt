@@ -1,6 +1,7 @@
 package com.habitrpg.common.habitica.helpers
 
-import android.annotation.SuppressLint
+import android.content.res.Resources
+import android.os.Build
 import java.util.Locale
 
 class LanguageHelper(languageSharedPref: String?) {
@@ -41,12 +42,10 @@ class LanguageHelper(languageSharedPref: String?) {
     }
 
     companion object {
-        // Intentional, we want the system locale, not the app locale
-        @SuppressLint("ConstantLocale")
+         // always returns the first entry in the system's locale list (the OS setting
         val systemLocale: Locale
-
-        init {
-            systemLocale = Locale.getDefault()
-        }
+            get() =
+                Resources.getSystem().configuration.locales[0]
     }
+
 }
